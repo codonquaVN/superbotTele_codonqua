@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 
 // ===== CONFIG =====
 const TOKEN = process.env.BOT_TOKEN || "8594059208:AAGLGk7M9tOOqMXYCYv-C6R0RSwmnt53M4o";
-const WEBHOOK_URL = process.env.WEBHOOK_URL || "https://your-render-url.onrender.com/webhook";
+const WEBHOOK_URL = process.env.WEBHOOK_URL || "https://superbottele-codonqua.onrender.com/webhook";
 
 const bot = new TelegramBot(TOKEN);
 const app = express();
