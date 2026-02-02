@@ -4,40 +4,40 @@ const TelegramBot = require("node-telegram-bot-api");
 const TOKEN = process.env.BOT_TOKEN || "8594059208:AAGLGk7M9tOOqMXYCYv-C6R0RSwmnt53M4o";
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-// ===== UTIL: format số =====
+// ===== FORMAT NUMBER =====
 function formatNumber(n) {
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-// ===== CORE: tách dòng tính tiền =====
-function parseLine(line) {
-  const match = line.match(/(\S+)\s+(\S+)\s+(\d+)\s*x(\d+)/i);
+// ===== EXTRACT PRICE "2500x5" =====
+function extractPrice(line) {
+  const match = line.match(/(\d+)\s*x\s*(\d+)/i);
   if (!match) return null;
-
-  const [_, model, version, price, qty] = match;
-  const total = parseInt(price) * parseInt(qty);
-
-  return {
-    raw: `${model} ${version} ${price}x${qty}`,
-    total
-  };
+  const price = parseInt(match[1]);
+  const qty = parseInt(match[2]);
+  return { total: price * qty };
 }
 
-// ===== MAIN FUNCTION: xử lý input =====
+// ===== PROCESS USER INPUT =====
 function processInput(text) {
-  const list = text
-    .match(/\S+\s+\S+\s+\d+x\d+/gi)
-    ?.map(parseLine)
-    .filter(Boolean);
+  const lines = text
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
 
-  if (!list || list.length === 0) return null;
+  if (lines.length === 0) return null;
 
   let output = "";
   let sum = 0;
 
-  list.forEach(i => {
-    output += `${i.raw} : ${formatNumber(i.total)}\n`;
-    sum += i.total;
+  lines.forEach((line, index) => {
+    const priceInfo = extractPrice(line);
+    if (!priceInfo) return;
+
+    const total = priceInfo.total;
+    sum += total;
+
+    output += `${index + 1}. ${line} : ${formatNumber(total)}\n`;
   });
 
   output += "-------------------------\n";
@@ -54,7 +54,7 @@ bot.on("message", msg => {
   const result = processInput(text);
 
   if (!result) {
-    bot.sendMessage(chatId, "Sai định dạng!\nVí dụ: a07 6.128 2500x5 A07 4.128 2200x1");
+    bot.sendMessage(chatId, "Sai định dạng!\nVí dụ:\na07 6.128 2500x5\nA07 4.128 2200x1");
     return;
   }
 
@@ -63,14 +63,4 @@ bot.on("message", msg => {
   });
 });
 
-// ====== SAU NÀY BẠN CHỈ VIỆC THÊM TÍNH NĂNG NGAY DƯỚI ======
-//
-// ví dụ thêm command /start:
-// bot.onText(/\/start/, msg => {
-//   bot.sendMessage(msg.chat.id, "Hello!");
-// });
-//
-// ví dụ thêm tính năng tính tổng theo phần trăm:
-// function addVAT(){...}
-//
-// (bạn cứ thêm ngay dưới này cực dễ)
+console.log("BOT ĐÃ CHẠY...");
