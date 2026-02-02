@@ -7,6 +7,8 @@ const TOKEN = process.env.BOT_TOKEN || "8594059208:AAGLGk7M9tOOqMXYCYv-C6R0RSwmn
 const WEBHOOK_URL = process.env.WEBHOOK_URL || "https://superbottele-codonqua.onrender.com/webhook";
 
 const bot = new TelegramBot(TOKEN);
+const app = express();
+
 bot.setWebHook(`${WEBHOOK_URL}`);
 
 app.use(bodyParser.json());
